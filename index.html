@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Countdown — Jan 2027</title>
+  <style>
+    :root{
+      --bg:#0b0f12;
+      --card:#0f1619;
+      --accent:#00e6a8;
+      --muted:rgba(255,255,255,0.45);
+      --glass: rgba(255,255,255,0.02);
+      --shadow: 0 8px 30px rgba(2,6,23,0.6);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: linear-gradient(180deg,#081018 0%, #07121a 60%);
+      color:#fff;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:24px;
+    }
+
+    .wrap{
+      width:100%;
+      max-width:920px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:14px;
+      padding:28px;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(255,255,255,0.03);
+    }
+
+    header{
+      display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;
+    }
+    .brand{
+      display:flex;gap:12px;align-items:center;
+    }
+    .logo{
+      width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#00b2ff);display:grid;place-items:center;color:#021014;font-weight:700;font-size:18px;letter-spacing:0.6px
+    }
+    .title{font-size:16px;font-weight:600}
+    .subtitle{font-size:12px;color:var(--muted)}
+
+    .countdown{
+      display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:center;padding:14px 6px 6px 6px
+    }
+
+    .unit{
+      min-width:120px;
+      flex:1 1 110px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+      border-radius:10px;padding:16px;display:flex;flex-direction:column;align-items:center;backdrop-filter:blur(6px);
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    .number{font-size:44px;font-weight:700;letter-spacing:1px}
+    .label{font-size:12px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:1px}
+
+    .meta{display:flex;align-items:center;justify-content:space-between;margin-top:16px;gap:12px}
+    .progress-wrap{flex:1}
+    .progress{height:8px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden}
+    .progress > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#00b2ff);transition:width 600ms linear}
+
+    .target{font-size:13px;color:var(--muted);white-space:nowrap}
+    .cta{font-size:13px;padding:8px 12px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);cursor:default}
+
+    footer{margin-top:12px;text-align:center;color:var(--muted);font-size:12px}
+
+    @media (max-width:760px){
+      .number{font-size:36px}
+      .unit{min-width:110px;padding:12px}
+      .logo{width:40px;height:40px}
+    }
+
+    @media (max-width:420px){
+      .countdown{gap:10px}
+      .unit{flex:1 1 45%}
+      header{flex-direction:column;align-items:flex-start}
+    }
+
+    /* reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .progress > i{transition:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" role="region" aria-label="Countdown to January 2027">
+    <header>
+      <div class="brand">
+        <div class="logo">JEE</div>
+        <div>
+          <div class="title">JEE 2027</div>
+          <div class="subtitle">Counting from 19-11-2025</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div class="target" id="targetLabel">Target: Jan 1, 2027 — 00:00 (local)</div>
+        <div class="cta" id="nowLabel">Sync: --</div>
+      </div>
+    </header>
+
+    <main>
+      <div class="countdown" id="countdown">
+        <div class="unit">
+          <div class="number" id="days">--</div>
+          <div class="label">Days</div>
+        </div>
+        <div class="unit">
+          <div class="number" id="hours">--</div>
+          <div class="label">Hours</div>
+        </div>
+        <div class="unit">
+          <div class="number" id="minutes">--</div>
+          <div class="label">Minutes</div>
+        </div>
+        <div class="unit">
+          <div class="number" id="seconds">--</div>
+          <div class="label">Seconds</div>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="progress-wrap">
+          <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+        </div>
+        <div style="min-width:110px;text-align:right;">
+          <div class="subtitle" id="percentLabel">--%</div>
+          <div style="font-size:11px;color:var(--muted)">progress</div>
+        </div>
+      </div>
+
+      <footer>
+        <div id="status">Counting down...</div>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    (function(){
+      // Target: Jan 1, 2027 00:00:00 local time
+      const target = new Date(2027, 0, 1, 0, 0, 0, 0);
+      const start = new Date(); // 'today' as sync baseline
+
+      const daysEl = document.getElementById('days');
+      const hoursEl = document.getElementById('hours');
+      const minsEl = document.getElementById('minutes');
+      const secsEl = document.getElementById('seconds');
+      const statusEl = document.getElementById('status');
+      const nowLabel = document.getElementById('nowLabel');
+      const percentLabel = document.getElementById('percentLabel');
+      const progressBar = document.getElementById('progressBar');
+      const targetLabel = document.getElementById('targetLabel');
+
+      // show localized target date
+      targetLabel.textContent = 'Target: ' + target.toLocaleString(undefined, { month:'short', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' }) + ' (local)';
+
+      function pad(n){return String(n).padStart(2,'0')}
+
+      function update(){
+        const now = new Date();
+        nowLabel.textContent = 'Now: ' + now.toLocaleTimeString();
+
+        let diff = target - now; // ms
+        if (diff <= 0){
+          // reached
+          daysEl.textContent = '00';
+          hoursEl.textContent = '00';
+          minsEl.textContent = '00';
+          secsEl.textContent = '00';
+          progressBar.style.width = '100%';
+          percentLabel.textContent = '100%';
+          statusEl.textContent = 'Target reached — January 2027 has begun.';
+          return;
+        }
+
+        const totalMs = target - start; // total countdown duration
+        const elapsedMs = now - start;
+        const pct = Math.max(0, Math.min(1, elapsedMs / totalMs));
+        const pctDisplay = Math.round(pct * 100);
+        progressBar.style.width = pctDisplay + '%';
+        percentLabel.textContent = pctDisplay + '%';
+
+        // compute days/h/m/s
+        const sec = Math.floor(diff / 1000) % 60;
+        const min = Math.floor(diff / (1000*60)) % 60;
+        const hour = Math.floor(diff / (1000*60*60)) % 24;
+        const day = Math.floor(diff / (1000*60*60*24));
+
+        daysEl.textContent = String(day).padStart(2,'0');
+        hoursEl.textContent = pad(hour);
+        minsEl.textContent = pad(min);
+        secsEl.textContent = pad(sec);
+
+        statusEl.textContent = 'Time remaining';
+      }
+
+      // initial update and interval
+      update();
+      // sync to real time — use 250ms for smooth seconds and progress animation
+      const t = setInterval(update, 250);
+
+      // accessibility: reduce updates if prefers-reduced-motion
+      const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+      if (mq.matches){
+        clearInterval(t);
+        setInterval(update, 1000);
+      }
+
+      // expose for debugging
+      window.__countdown = { target, start };
+    })();
+  </script>
+</body>
+</html>
